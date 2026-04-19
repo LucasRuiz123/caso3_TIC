@@ -10,12 +10,13 @@ public class BuzonSemiActivaPasiva {
     }
 
     public synchronized boolean depositar(Evento e) {
-        if (cola.size() == capacidad) {
-            return false;
-        }
-        cola.add(e);
-        return true;
+    if (cola.size() == capacidad) {
+        return false;
     }
+    cola.add(e);
+    notifyAll(); 
+    return true;
+}
 
     public synchronized Evento retirar() throws InterruptedException {
     while (cola.isEmpty()) {

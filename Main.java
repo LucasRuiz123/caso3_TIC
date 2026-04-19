@@ -9,60 +9,75 @@ public class Main {
 
         int baseEventos = 5;
 
-        // Aca se crean los buzones, los cuales son los monitores de cada thread. Las capacidades (ilimitados o limitados)
-        //  son definidos por paramentro pues este indica el tamaño de la cola
-        // Este buzon es el intermediario entre sensores y broker
-        //BuzonSemiActiva EntradaBuzon = new BuzonSemiActiva(Integer.MAX_VALUE);
-
+        // 🧱 BUZONES
         BuzonSemiActivaPasiva buzonEntrada = new BuzonSemiActivaPasiva(Integer.MAX_VALUE);
-        // Este buzon es el intermediar entre broker y Administrador
-        BuzonSemiActivaSemiActiva buzonAlertas = new BuzonSemiActivaSemiActiva(Integer.MAX_VALUE);
-        // Este Buzon es el intermediario entre broker y clasificadores
-        BuzonSemiActivaPasiva buzonClasificacion = new BuzonSemiActivaPasiva(tam1);
-        BuzonSemiActivaPasiva[] buzonClasificadores = new BuzonSemiActivaPasiva[nc];
+        BuzonSemiActivaSemiActiva buzonAlertas = new BuzonSemiActivaSemiActiva(tam1);
+        BuzonSemiActivaPasiva buzonClasificacion = new BuzonSemiActivaPasiva(tam2);
+
+        BuzonPasivo[] buzonesServidores = new BuzonPasivo[ns];
+        for (int i = 0; i < ns; i++) {
+            buzonesServidores[i] = new BuzonPasivo(Integer.MAX_VALUE);
+        }
+
+        // Creacion de servidores
+        Servidores[] servidores = new Servidores[ns];
+        for (int i = 0; i < ns; i++) {
+            servidores[i] = new Servidores(buzonesServidores[i]);
+            servidores[i].start();
+        }
+
+        // Creacion de clasificadores
+        Clasificadores[] clasificadores = new Clasificadores[nc];
         for (int i = 0; i < nc; i++) {
-            buzonClasificadores[i] = new BuzonSemiActivaPasiva(tam2);
+            clasificadores[i] = new Clasificadores(i, buzonClasificacion, buzonesServidores);
+            clasificadores[i].start();
         }
 
-
-    
-
-        
-        // Se crean los sensores. 
-        Sensores[] sensores = new Sensores[ni];
-        for (int i = 0; i < ni; i++) {
-            int eventos = baseEventos * (i + 1);
-            sensores[i] = new Sensores(i + 1, buzonEntrada, eventos, ns);
-
-        }
-        // se crea el broker. se neceista uno por cada lista de sensores
-        Broker broker = new Broker(buzonEntrada, buzonAlertas, buzonClasificacion);
-
-        broker.start();
-        // aca se empiezan a ejecutar los sensores
-        for (Sensores s : sensores) {
-            s.start();
-        }
-
-        // Se necesita saber cual es el ultimo evento por lo cual se hace un join.
-        //  de De esta manera podemos asegurar que todos lleguen al tiempo y no inicialicen el broker antes. 
-        for (Sensores s : sensores) {
-            s.join();
-        }
-
-        //Aca podemos depositar el evento fin, el cual el broker puede identificar y meter en el buzon de administrador.
-        buzonEntrada.depositar(new Evento(true));
-
-        // ⏳ Esperar broker
-        broker.join();
-
-        System.out.println("Sistema terminado (hasta broker)");
-    
+        // Creacion de administracion
         Administracion admin = new Administracion(buzonAlertas, buzonClasificacion, nc);
         admin.start();
-        admin.join();
 
-    
-    
-}
+        // Creacion de broker
+        Broker broker = new Broker(buzonEntrada, buzonAlertas, buzonClasificacion);
+        broker.start();
+
+        // Creacion de sensores
+        Sensores[] sensores = new Sensores[ni];
+        for (int i = 0; i < ni; i++) {
+            sensores[i] = new Sensores(i, buzonEntrada, baseEventos, ns);
+            sensores[i].start();
+        }
+        System.out.println("Sistema iniciado correctamente");
+
+        // esperar a unir todos los sensores
+        for (int i = 0; i < ni; i++) {
+            sensores[i].join();
+        }
+        System.out.println("Todos los sensores han terminado de generar eventos");
+
+        // Evento que crea el evento fin. 
+        buzonEntrada.depositar(new Evento(true));
+        System.out.println("Evento de fin enviado al broker");
+
+        // Esperar que el broker termine de procesar el evento fin
+        broker.join();
+        // Esperar que el admin termine de procesar el evento fin
+        admin.join();
+        // unir los clasificadores
+        for (int i = 0; i < nc; i++) {
+            clasificadores[i].join();
+        }
+
+        //  Crear los eventos fin para cada clasificador en el buzon de servidores
+        for (int i = 0; i < ns; i++) {
+            buzonesServidores[i].depositar(new Evento(true));
+        }
+
+        // union de los servidores
+        for (int i = 0; i < ns; i++) {
+            servidores[i].join();
+        }
+        // avisar que el sistema ha finalizado correctamente
+        System.out.println("Sistema finalizado correctamente");
+    }
 }

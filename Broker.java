@@ -12,10 +12,15 @@ public class Broker extends Thread {
     public void run() {
     try {
         while (true) {
-            Evento e = buzonEntrada.retirar();
+
+            Evento e = buzonEntrada.retirar(); 
+
+            System.out.println("Broker recibió: " + e.getid());
 
             if (e.esFin()) {
-                buzonAlertas.depositar(e);
+                while (!buzonAlertas.depositar(e)) {
+                    Thread.yield();
+                }
                 break;
             }
 

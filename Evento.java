@@ -22,4 +22,14 @@ public class Evento {
     public int getTipo() {
         return tipoEvento;
     }
+    public int getid(){
+        return idSensor;
+    }
+    public int getConsecutivo(){
+        return consecutivo;
+    }
+    @Override
+    public String toString() {
+        return "Evento[sensor=" + idSensor + ", id=" + consecutivo + ", tipo=" + tipoEvento + "]";
+    }
 }

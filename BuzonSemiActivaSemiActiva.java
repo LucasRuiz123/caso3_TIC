@@ -13,6 +13,7 @@ public class BuzonSemiActivaSemiActiva {
         return false;
     }
     cola.add(e);
+    notify();
     return true;
 }
 

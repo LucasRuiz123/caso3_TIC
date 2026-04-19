@@ -22,7 +22,7 @@ public class Sensores extends Thread {
                 Thread.yield();
             }
 
-            System.out.println("Sensor " + idSensor + " produjo " + e);
+            System.out.println("Sensor " + idSensor + " produjo " + e.toString());
         }
     }
 }
