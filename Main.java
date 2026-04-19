@@ -13,7 +13,7 @@ public class Main {
         BuzonSemiActivaPasiva buzonEntrada = new BuzonSemiActivaPasiva(Integer.MAX_VALUE);
         BuzonSemiActivaSemiActiva buzonAlertas = new BuzonSemiActivaSemiActiva(tam1);
         BuzonSemiActivaPasiva buzonClasificacion = new BuzonSemiActivaPasiva(tam2);
-        
+
         // creacion de los varios buzones de servidores 
         BuzonPasivo[] buzonesServidores = new BuzonPasivo[ns];
         for (int i = 0; i < ns; i++) {
@@ -48,17 +48,14 @@ public class Main {
             sensores[i] = new Sensores(i, buzonEntrada, baseEventos, ns);
             sensores[i].start();
         }
-        System.out.println("Sistema iniciado correctamente");
 
         // esperar a unir todos los sensores
         for (int i = 0; i < ni; i++) {
             sensores[i].join();
         }
-        System.out.println("Todos los sensores han terminado de generar eventos");
 
         // Evento que crea el evento fin. 
         buzonEntrada.depositar(new Evento(true));
-        System.out.println("Evento de fin enviado al broker");
 
         // Esperar que el broker termine de procesar el evento fin
         broker.join();

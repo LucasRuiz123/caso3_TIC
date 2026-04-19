@@ -31,7 +31,10 @@ public class Administracion extends Thread {
                     Thread.yield();
                     System.out.println("infonsivo el evento: "+ e.toString());
                 }
+            }else {
+                System.out.println("el evento: "+ e.toString() + " no es ofensivo");
             }
+
         }
     } catch (Exception ex) {
         ex.printStackTrace();
