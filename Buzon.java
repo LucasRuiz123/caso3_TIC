@@ -14,7 +14,7 @@ class Buzon {
             wait();
         }
         cola.add(e);
-        notifyAll();
+        notify();
     }
 
     public synchronized Evento retirar() throws InterruptedException {
