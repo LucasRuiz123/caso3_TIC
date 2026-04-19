@@ -9,11 +9,12 @@ public class Main {
 
         int baseEventos = 5;
 
-        // 🧱 BUZONES
+        // Creacion de buzones
         BuzonSemiActivaPasiva buzonEntrada = new BuzonSemiActivaPasiva(Integer.MAX_VALUE);
         BuzonSemiActivaSemiActiva buzonAlertas = new BuzonSemiActivaSemiActiva(tam1);
         BuzonSemiActivaPasiva buzonClasificacion = new BuzonSemiActivaPasiva(tam2);
-
+        
+        // creacion de los varios buzones de servidores 
         BuzonPasivo[] buzonesServidores = new BuzonPasivo[ns];
         for (int i = 0; i < ns; i++) {
             buzonesServidores[i] = new BuzonPasivo(Integer.MAX_VALUE);
